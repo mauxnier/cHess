@@ -111,7 +111,7 @@ void chess_to_indices(char colonne, int ligne, int *indiceLigne, int *indiceColo
     // Vérifiez que les coordonnées sont valides
     if (colonne < 'A' || colonne > 'H' || ligne < 1 || ligne > 8)
     {
-        printf("%c %d", colonne, ligne);
+        printf("%c / %d", colonne, ligne);
         printf("Coordonnees d'echecs invalides.\n");
         *indiceLigne = -1;
         *indiceColonne = -1;
@@ -167,7 +167,7 @@ bool is_rook_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
             int colonneIntermediaire = colonneDepart + i * pasColonne;
             if (chessboard[ligneIntermediaire][colonneIntermediaire] != 0)
             {
-                printf("Trajectoire bloquée.\n");
+                printf("Trajectoire de la tour bloquee.\n");
                 return false; // Déplacement invalide
             }
         }
@@ -177,7 +177,7 @@ bool is_rook_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
     }
     else
     {
-        printf("La tour ne peut se déplacer qu'horizontalement ou verticalement.\n");
+        printf("La tour ne peut se deplacer qu'horizontalement ou verticalement.\n");
         return false; // Déplacement invalide
     }
 }
@@ -200,6 +200,7 @@ bool is_knight_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colon
         }
     }
 
+    printf("Le cheval ne peut se deplacer qu'en L.\n");
     // Si aucune des conditions ci-dessus n'est satisfaite, le déplacement est invalide
     return false;
 }
@@ -223,7 +224,7 @@ bool is_bishop_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colon
             int colonneIntermediaire = colonneDepart + i * pasColonne;
             if (chessboard[ligneIntermediaire][colonneIntermediaire] != 0)
             {
-                printf("Trajectoire bloquée.\n");
+                printf("Trajectoire du fou bloquee.\n");
                 return false; // Déplacement invalide
             }
         }
@@ -233,7 +234,7 @@ bool is_bishop_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colon
     }
     else
     {
-        printf("Le fou ne peut se déplacer qu'en diagonale.\n");
+        printf("Le fou ne peut se deplacer qu'en diagonale.\n");
         return false; // Déplacement invalide
     }
 }
@@ -259,7 +260,7 @@ bool is_queen_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonn
             int colonneIntermediaire = colonneDepart + i * pasColonne;
             if (chessboard[ligneIntermediaire][colonneIntermediaire] != 0)
             {
-                printf("Trajectoire bloquée.\n");
+                printf("Trajectoire de la reine bloquee.\n");
                 return false; // Déplacement invalide
             }
         }
@@ -269,7 +270,7 @@ bool is_queen_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonn
     }
     else
     {
-        printf("La reine ne peut se déplacer qu'horizontalement, verticalement ou en diagonale.\n");
+        printf("La reine ne peut se deplacer qu'horizontalement, verticalement ou en diagonale.\n");
         return false; // Déplacement invalide
     }
 }
@@ -288,7 +289,7 @@ bool is_king_move_valid(int ligneDepart, int colonneDepart, int ligneArrivee, in
     }
     else
     {
-        printf("Le roi ne peut se déplacer que d'une case horizontalement, verticalement ou en diagonale.\n");
+        printf("Le roi ne peut se deplacer que d'une case horizontalement, verticalement ou en diagonale.\n");
         return false; // Déplacement invalide
     }
 }
@@ -323,12 +324,12 @@ bool is_game_over(int chessboard[SIZE][SIZE])
 
     if (!roiBlancTrouve)
     {
-        printf("La partie est terminée. Les noirs ont gagné !\n");
+        printf("La partie est terminee. Les noirs ont gagne !\n");
         return true;
     }
     else if (!roiNoirTrouve)
     {
-        printf("La partie est terminée. Les blancs ont gagné !\n");
+        printf("La partie est terminee. Les blancs ont gagne !\n");
         return true;
     }
 
@@ -393,8 +394,8 @@ int main()
         // Demander au joueur de saisir les coordonnées de la case de départ
         char colonneDepart;
         int ligneDepart;
-        printf("Entrez les coordonnees de la case de depart (colonne,ligne) : ");
-        scanf("%c,%d", &colonneDepart, &ligneDepart);
+        printf("Entrez les coordonnees de la case de depart sans virgule (colonne, ligne) : ");
+        scanf(" %c%d", &colonneDepart, &ligneDepart);
 
         // Convertir les coordonnées d'échecs en indices de ligne et de colonne
         int indiceLigneDepart, indiceColonneDepart;
@@ -414,12 +415,17 @@ int main()
             printf("La case de depart ne contient pas une piece de votre couleur.\n");
             continue;
         }
+        else if (pieceDepart == 0)
+        {
+            printf("Veuillez choisir une piece a deplacer.\n");
+            continue;
+        }
 
         // Demander au joueur de saisir les coordonnées de la case d'arrivée
         char colonneArrivee;
         int ligneArrivee;
-        printf("Entrez les coordonnees de la case d'arrivee (colonne,ligne) : ");
-        scanf("%c,%d", &colonneArrivee, &ligneArrivee);
+        printf("Entrez les coordonnees de la case d'arrivee sans virgule (colonne, ligne) : ");
+        scanf(" %c%d", &colonneArrivee, &ligneArrivee);
 
         // Convertir les coordonnées d'échecs en indices de ligne et de colonne
         int indiceLigneArrivee, indiceColonneArrivee;
