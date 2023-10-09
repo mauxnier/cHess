@@ -1,7 +1,10 @@
 # cHess
 Jeu d'échecs de la hess
 
-## Compilation et exécution
+## Lancement du jeu
+Dans le dossier output, lancer le fichier cHess.exe
+
+## Compilation et exécution (si modification du code source)
 > gcc hess.c -o cHess.exe  # Compilation
 > .\cHess.exe              # Exécution
 
