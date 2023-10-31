@@ -2,6 +2,7 @@
 #include <stdlib.h>  // Pour la fonction abs
 #include <ctype.h>   // Pour la fonction toupper
 #include <stdbool.h> // Pour utiliser le type bool
+#include <conio.h>   // Pour Windows: getch()
 
 // Taille de l'échiquier (8x8)
 #define SIZE 8
@@ -15,18 +16,21 @@ enum Pieces
     BISHOP = 3,
     QUEEN = 4,
     KING = 5,
+    PAWN = 6,
     // Pièces blanches
     WHITE_ROOK = 1,
     WHITE_KNIGHT = 2,
     WHITE_BISHOP = 3,
     WHITE_QUEEN = 4,
     WHITE_KING = 5,
+    WHITE_PAWN = 6,
     // Pièces noires
     BLACK_ROOK = -1,
     BLACK_KNIGHT = -2,
     BLACK_BISHOP = -3,
     BLACK_QUEEN = -4,
     BLACK_KING = -5,
+    BLACK_PAWN = -6
 };
 
 // Fonction pour initialiser un échiquier vide
@@ -44,12 +48,12 @@ void init_chessboard(int chessboard[8][8])
 // Fonction pour afficher l'échiquier de manière plus visuelle
 void display_chessboard(int chessboard[8][8])
 {
-    printf("\n-----------------------\n| / A B C D E F G H \\ |\n"); // Indices de colonnes
-    printf("| |-----------------| |\n");
+    printf("\n---------------------------\n|   / A B C D E F G H \\   |\n"); // Indices de colonnes
+    printf("|   |-----------------|   |\n");
 
     for (int i = 0; i < 8; i++)
     {
-        printf("|%d| ", 8 - i); // Indices de lignes
+        printf("| %d | ", 8 - i); // Indices de lignes
 
         for (int j = 0; j < 8; j++)
         {
@@ -75,6 +79,9 @@ void display_chessboard(int chessboard[8][8])
             case 5:
                 pieceChar = 'k'; // Roi blanc
                 break;
+            case 6:
+                pieceChar = 'p'; // Pion blanc
+                break;
             case -1:
                 pieceChar = 'R'; // Tour noire
                 break;
@@ -90,16 +97,19 @@ void display_chessboard(int chessboard[8][8])
             case -5:
                 pieceChar = 'K'; // Roi noir
                 break;
+            case -6:
+                pieceChar = 'P'; // Pion noir
+                break;
             default:
                 pieceChar = ' '; // Case vide
             }
 
             printf("%c ", pieceChar);
         }
-        printf("|%d|\n", 8 - i); // Indices de lignes
+        printf("| %d |\n", 8 - i); // Indices de lignes
     }
-    printf("| |-----------------| |\n");
-    printf("| \\ A B C D E F G H / |\n-----------------------\n\n"); // Indices de colonnes
+    printf("|   |-----------------|   |\n");
+    printf("|   \\ A B C D E F G H /   |\n---------------------------\n\n"); // Indices de colonnes
 }
 
 // Fonction pour convertir la notation d'échecs en indices de ligne et de colonne
@@ -111,8 +121,8 @@ void chess_to_indices(char colonne, int ligne, int *indiceLigne, int *indiceColo
     // Vérifiez que les coordonnées sont valides
     if (colonne < 'A' || colonne > 'H' || ligne < 1 || ligne > 8)
     {
-        printf("%c / %d", colonne, ligne);
-        printf("Coordonnees d'echecs invalides.\n");
+        // printf("%c / %d", colonne, ligne);
+        printf("Coordonnees du plateau invalides.\n");
         *indiceLigne = -1;
         *indiceColonne = -1;
         return;
@@ -294,6 +304,69 @@ bool is_king_move_valid(int ligneDepart, int colonneDepart, int ligneArrivee, in
     }
 }
 
+// Fonction pour vérifier si le déplacement d'un pion est valide
+bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+{
+    // Récupérer la valeur de la pièce dans la case de départ
+    int valeurPiece = chessboard[ligneDepart][colonneDepart];
+
+    // Calculer la différence de lignes et de colonnes entre la case de départ et la case d'arrivée
+    int deltaLigne = ligneArrivee - ligneDepart;
+    int deltaColonne = colonneArrivee - colonneDepart;
+
+    printf("deltaLigne = %d, deltaColonne = %d\n", deltaLigne, deltaColonne);
+    printf("ligneDepart = %d, colonneDepart = %d\n", ligneDepart, colonneDepart);
+    printf("ligneArrivee = %d, colonneArrivee = %d\n", ligneArrivee, colonneArrivee);
+
+    // Les pions blancs se déplacent vers le haut (+valeurPiece) et les noirs vers le bas (-valeurPiece)
+    if (valeurPiece > 0)
+    {
+        if (chessboard[ligneArrivee][colonneArrivee] == 0)
+        {
+            if (deltaLigne == -1 && deltaColonne == 0)
+            {
+                return true; // Déplacement d'une case vers le haut
+            }
+            else if (deltaLigne == -2 && deltaColonne == 0 && ligneDepart == 6)
+            {
+                // Déplacement initial de deux cases pour les pions blancs
+                if (chessboard[ligneDepart - 1][colonneDepart] == 0)
+                {
+                    return true; // Déplacement valide
+                }
+            }
+        }
+        else if (chessboard[ligneArrivee][colonneArrivee] < 0 && deltaLigne == -1 && abs(deltaColonne) == 1)
+        {
+            return true; // Prise en diagonale d'une pièce noire
+        }
+    }
+    else if (valeurPiece < 0)
+    {
+        if (chessboard[ligneArrivee][colonneArrivee] == 0)
+        {
+            if (deltaLigne == 1 && deltaColonne == 0)
+            {
+                return true; // Déplacement d'une case vers le bas
+            }
+            else if (deltaLigne == 2 && deltaColonne == 0 && ligneDepart == 1)
+            {
+                // Déplacement initial de deux cases pour les pions noirs
+                if (chessboard[ligneDepart + 1][colonneDepart] == 0)
+                {
+                    return true; // Déplacement valide
+                }
+            }
+        }
+        else if (chessboard[ligneArrivee][colonneArrivee] > 0 && deltaLigne == 1 && abs(deltaColonne) == 1)
+        {
+            return true; // Prise en diagonale d'une pièce blanche
+        }
+    }
+
+    return false; // Déplacement invalide par défaut
+}
+
 // Fonction pour vérifier si la partie d'échecs est terminée
 bool is_game_over(int chessboard[SIZE][SIZE])
 {
@@ -363,6 +436,10 @@ int main()
     chessboard[0][5] = BLACK_BISHOP;
     chessboard[0][3] = BLACK_QUEEN;
     chessboard[0][4] = BLACK_KING;
+    for (int i = 0; i < SIZE; i++)
+    {
+        chessboard[1][i] = BLACK_PAWN;
+    }
 
     // Placez les pièces blanches sur le jeu
     chessboard[7][0] = WHITE_ROOK;
@@ -373,8 +450,15 @@ int main()
     chessboard[7][5] = WHITE_BISHOP;
     chessboard[7][3] = WHITE_QUEEN;
     chessboard[7][4] = WHITE_KING;
+    for (int i = 0; i < SIZE; i++)
+    {
+        chessboard[6][i] = WHITE_PAWN;
+    }
 
     bool tourBlancs = true; // Pour déterminer de quel côté commence la partie
+
+    printf("\n\x1B[1mBienvenue dans le jeu d'echecs !\x1B[0m\n");
+    printf("Vous pouvez quitter le jeu a tout moment en appuyant sur la touche \x1B[1mCTRL+C\x1B[0m.\n\n");
 
     // Boucle principale du jeu
     while (!is_game_over(chessboard))
@@ -455,23 +539,27 @@ int main()
         {
         case ROOK:
             deplacementValide = is_rook_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "tour";
+            nomPiece = "Tour";
             break;
         case KNIGHT:
             deplacementValide = is_knight_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "cheval";
+            nomPiece = "Cheval";
             break;
         case BISHOP:
             deplacementValide = is_bishop_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "fou";
+            nomPiece = "Fou";
             break;
         case QUEEN:
             deplacementValide = is_queen_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "reine";
+            nomPiece = "Reine";
             break;
         case KING:
             deplacementValide = is_king_move_valid(indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "roi";
+            nomPiece = "Roi";
+            break;
+        case PAWN:
+            deplacementValide = is_pawn_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+            nomPiece = "Pion";
             break;
         default:
             printf("Piece invalide.\n");
