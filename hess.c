@@ -3,6 +3,7 @@
 #include <ctype.h>   // Pour la fonction toupper
 #include <stdbool.h> // Pour utiliser le type bool
 #include <conio.h>   // Pour Windows: getch()
+#include <string.h>  // Pour les chaines de caractères
 
 // Taille de l'échiquier (8x8)
 #define SIZE 8
@@ -33,6 +34,142 @@ enum Pieces
     BLACK_PAWN = -6
 };
 
+// fonction de conversion en char pour sauvegarde
+char piece_to_char(int piece)
+{
+    char pieceChar;
+    switch (piece)
+    {
+    case 1:
+        pieceChar = 'r'; // Tour blanche
+        break;
+    case 2:
+        pieceChar = 'n'; // Cheval blanc
+        break;
+    case 3:
+        pieceChar = 'b'; // Fou blanc
+        break;
+    case 4:
+        pieceChar = 'q'; // Reine blanche
+        break;
+    case 5:
+        pieceChar = 'k'; // Roi blanc
+        break;
+    case 6:
+        pieceChar = 'p'; // Pion blanc
+        break;
+    case -1:
+        pieceChar = 'R'; // Tour noire
+        break;
+    case -2:
+        pieceChar = 'N'; // Cheval noir
+        break;
+    case -3:
+        pieceChar = 'B'; // Fou noir
+        break;
+    case -4:
+        pieceChar = 'Q'; // Reine noire
+        break;
+    case -5:
+        pieceChar = 'K'; // Roi noir
+        break;
+    case -6:
+        pieceChar = 'P'; // Pion noir
+        break;
+    case 0:
+    default:
+        pieceChar = ' '; // Case vide
+    }
+    return pieceChar;
+}
+
+// Fonction d'ouverture du fichier de sauvegarde
+int char_to_piece(char pieceChar)
+{
+    switch (pieceChar)
+    {
+    case 'r':
+        return 1; // Tour blanche
+    case 'n':
+        return 2; // Cheval blanc
+    case 'b':
+        return 3; // Fou blanc
+    case 'q':
+        return 4; // Reine blanche
+    case 'k':
+        return 5; // Roi blanc
+    case 'p':
+        return 6; // Pion blanc
+    case 'R':
+        return -1; // Tour noire
+    case 'N':
+        return -2; // Cheval noir
+    case 'B':
+        return -3; // Fou noir
+    case 'Q':
+        return -4; // Reine noire
+    case 'K':
+        return -5; // Roi noir
+    case 'P':
+        return -6; // Pion noir
+    case ' ':
+    default:
+        return 0; // Case vide
+    }
+}
+
+// Fonction de sauvegarde
+void save_game(int chessboard[SIZE][SIZE], char filename[])
+{
+    filename = strcat(filename, ".hess");
+    FILE *save_file = fopen(filename, "w");
+
+    if (save_file == NULL)
+    {
+        printf("Erreur lors de la creation du fichier de sauvegarde.\n");
+        return;
+    }
+
+    for (int i = 0; i < SIZE; i++)
+    {
+        for (int j = 0; j < SIZE; j++)
+        {
+            fprintf(save_file, "%c", piece_to_char(chessboard[i][j])); // Utilisez une fonction pour convertir les pièces en caractères
+        }
+        fprintf(save_file, "\n");
+    }
+
+    fclose(save_file);
+    printf("Jeu sauvegarde avec succes vers %s\n", filename);
+}
+
+// Fonction de chargement du fichier de sauvegarde
+void load_game(int chessboard[SIZE][SIZE], char filename[])
+{
+    filename = strcat(filename, ".hess");
+    FILE *save_file = fopen(filename, "r");
+
+    if (save_file == NULL)
+    {
+        printf("Aucun fichier de sauvegarde nomme %s n'a ete trouve.\n", filename);
+        return;
+    }
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < SIZE; j++)
+        {
+            int piece = char_to_piece(fgetc(save_file)); // Utilisez une fonction pour convertir les caractères en pièces
+            chessboard[i][j] = piece;
+        }
+        // Lire le caractère de fin de ligne pour passer à la ligne suivante
+        fgetc(save_file);
+    }
+
+    fclose(save_file);
+    printf("Jeu charge avec succes depuis %s\n", filename);
+}
+
 // Fonction pour initialiser un échiquier vide
 void init_chessboard(int chessboard[8][8])
 {
@@ -60,51 +197,7 @@ void display_chessboard(int chessboard[8][8])
             int piece = chessboard[i][j];
 
             // Utiliser des caractères pour représenter les pièces
-            char pieceChar;
-
-            switch (piece)
-            {
-            case 1:
-                pieceChar = 'r'; // Tour blanche
-                break;
-            case 2:
-                pieceChar = 'n'; // Cheval blanc
-                break;
-            case 3:
-                pieceChar = 'b'; // Fou blanc
-                break;
-            case 4:
-                pieceChar = 'q'; // Reine blanche
-                break;
-            case 5:
-                pieceChar = 'k'; // Roi blanc
-                break;
-            case 6:
-                pieceChar = 'p'; // Pion blanc
-                break;
-            case -1:
-                pieceChar = 'R'; // Tour noire
-                break;
-            case -2:
-                pieceChar = 'N'; // Cheval noir
-                break;
-            case -3:
-                pieceChar = 'B'; // Fou noir
-                break;
-            case -4:
-                pieceChar = 'Q'; // Reine noire
-                break;
-            case -5:
-                pieceChar = 'K'; // Roi noir
-                break;
-            case -6:
-                pieceChar = 'P'; // Pion noir
-                break;
-            default:
-                pieceChar = ' '; // Case vide
-            }
-
-            printf("%c ", pieceChar);
+            printf("%c ", piece_to_char(piece));
         }
         printf("| %d |\n", 8 - i); // Indices de lignes
     }
@@ -133,6 +226,16 @@ void chess_to_indices(char colonne, int ligne, int *indiceLigne, int *indiceColo
 
     // Convertissez le numéro de ligne en un indice de 0 à 7
     *indiceLigne = 8 - ligne;
+}
+
+// Fonction pour déplacer une pièce
+void move_piece(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+{
+    // Copier la pièce de la case de départ vers la case d'arrivée
+    chessboard[ligneArrivee][colonneArrivee] = chessboard[ligneDepart][colonneDepart];
+
+    // Mettre la case de départ à EMPTY
+    chessboard[ligneDepart][colonneDepart] = EMPTY;
 }
 
 // Fonction pour vérifier si une pièce peut être déplacée vers une case d'arrivée
@@ -314,14 +417,10 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
     int deltaLigne = ligneArrivee - ligneDepart;
     int deltaColonne = colonneArrivee - colonneDepart;
 
-    printf("deltaLigne = %d, deltaColonne = %d\n", deltaLigne, deltaColonne);
-    printf("ligneDepart = %d, colonneDepart = %d\n", ligneDepart, colonneDepart);
-    printf("ligneArrivee = %d, colonneArrivee = %d\n", ligneArrivee, colonneArrivee);
-
     // Les pions blancs se déplacent vers le haut (+valeurPiece) et les noirs vers le bas (-valeurPiece)
     if (valeurPiece > 0)
     {
-        if (chessboard[ligneArrivee][colonneArrivee] == 0)
+        if (chessboard[ligneArrivee][colonneArrivee] == EMPTY)
         {
             if (deltaLigne == -1 && deltaColonne == 0)
             {
@@ -330,7 +429,7 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
             else if (deltaLigne == -2 && deltaColonne == 0 && ligneDepart == 6)
             {
                 // Déplacement initial de deux cases pour les pions blancs
-                if (chessboard[ligneDepart - 1][colonneDepart] == 0)
+                if (chessboard[ligneDepart - 1][colonneDepart] == EMPTY)
                 {
                     return true; // Déplacement valide
                 }
@@ -343,7 +442,7 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
     }
     else if (valeurPiece < 0)
     {
-        if (chessboard[ligneArrivee][colonneArrivee] == 0)
+        if (chessboard[ligneArrivee][colonneArrivee] == EMPTY)
         {
             if (deltaLigne == 1 && deltaColonne == 0)
             {
@@ -352,7 +451,7 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
             else if (deltaLigne == 2 && deltaColonne == 0 && ligneDepart == 1)
             {
                 // Déplacement initial de deux cases pour les pions noirs
-                if (chessboard[ligneDepart + 1][colonneDepart] == 0)
+                if (chessboard[ligneDepart + 1][colonneDepart] == EMPTY)
                 {
                     return true; // Déplacement valide
                 }
@@ -410,16 +509,6 @@ bool is_game_over(int chessboard[SIZE][SIZE])
     return false;
 }
 
-// Fonction pour déplacer une pièce
-void move_piece(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
-{
-    // Copier la pièce de la case de départ vers la case d'arrivée
-    chessboard[ligneArrivee][colonneArrivee] = chessboard[ligneDepart][colonneDepart];
-
-    // Mettre la case de départ à EMPTY
-    chessboard[ligneDepart][colonneDepart] = EMPTY;
-}
-
 int main()
 {
     int chessboard[SIZE][SIZE];
@@ -460,6 +549,26 @@ int main()
     printf("\n\x1B[1mBienvenue dans le jeu d'echecs !\x1B[0m\n");
     printf("Vous pouvez quitter le jeu a tout moment en appuyant sur la touche \x1B[1mCTRL+C\x1B[0m.\n\n");
 
+    // Chargement d'une partie (à améliorer)
+    printf("Voulez-vous charger une partie ? (o/n): ");
+    char choice;
+    scanf("%c", &choice);
+    if (choice == 'o' || choice == 'O')
+    {
+        printf("Donnez le nom du fichier de sauvegarde: ");
+        char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
+
+        if (scanf("%99s", filename) == 1)
+        { // Utilisez %99s pour éviter un dépassement de mémoire
+            printf("Nom du fichier: %s.hess\n", filename);
+            load_game(chessboard, filename); // TODO enregistrer si c'est les blancs ou noir qui joue
+        }
+        else
+        {
+            printf("Erreur lors de la saisie du nom de fichier.\n");
+        }
+    }
+
     // Boucle principale du jeu
     while (!is_game_over(chessboard))
     {
@@ -473,6 +582,28 @@ int main()
         else
         {
             printf("C'est au tour des noirs. (MAJUSCULE)\n");
+        }
+
+        // Sauvegarde du jeu (à améliorer)
+        char choice;
+        printf("Voulez vous sauvegarder et quitter la partie ? (o/n): ");
+        scanf(" %c", &choice);
+        if (choice == 'o' || choice == 'O')
+        {
+            printf("Donnez un nom au fichier de sauvegarde: ");
+            char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
+
+            if (scanf("%99s", filename) == 1)
+            { // Utilisez %99s pour éviter un dépassement de mémoire
+                printf("Nom du fichier: %s.hess\n", filename);
+                save_game(chessboard, filename);
+                break;
+                exit(0);
+            }
+            else
+            {
+                printf("Erreur lors de la saisie du nom de fichier.\n");
+            }
         }
 
         // Demander au joueur de saisir les coordonnées de la case de départ
