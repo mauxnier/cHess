@@ -509,6 +509,134 @@ bool is_game_over(int chessboard[SIZE][SIZE])
     return false;
 }
 
+// Vérifie si le déplacement est bon en fonction du type de piece
+bool is_move_valid_by_piece(int chessboard[SIZE][SIZE], int indiceLigneDepart, int indiceColonneDepart, int indiceLigneArrivee, int indiceColonneArrivee)
+{
+    // Vérifier si la pièce peut se déplacer vers la case d'arrivée
+    bool deplacementValide = false;
+    char *nomPiece = "";
+
+    int pieceDepart = chessboard[indiceLigneDepart][indiceColonneDepart];
+
+    // Vérifier le type de la pièce
+    switch (abs(pieceDepart))
+    {
+    case ROOK:
+        deplacementValide = is_rook_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        nomPiece = "Tour";
+        break;
+    case KNIGHT:
+        deplacementValide = is_knight_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        nomPiece = "Cheval";
+        break;
+    case BISHOP:
+        deplacementValide = is_bishop_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        nomPiece = "Fou";
+        break;
+    case QUEEN:
+        deplacementValide = is_queen_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        nomPiece = "Reine";
+        break;
+    case KING:
+        deplacementValide = is_king_move_valid(indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        nomPiece = "Roi";
+        break;
+    case PAWN:
+        deplacementValide = is_pawn_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        nomPiece = "Pion";
+        break;
+    default:
+        printf("Piece invalide.\n");
+    }
+
+    if (!deplacementValide)
+    {
+        printf("Le deplacement ne respecte pas les mouvements autorises de la piece %s\n", nomPiece);
+        return false;
+    }
+    else
+    {
+        deplacementValide = is_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+
+        if (!deplacementValide)
+        {
+            printf("Vous ne pouvez pas deplacer cette piece vers cette case.\n");
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+}
+
+// Demande à l'utilisateur case départ et case arrivée
+bool ask_move(int chessboard[SIZE][SIZE], bool tourBlancs, int *indiceLigneDepart, int *indiceColonneDepart, int *indiceLigneArrivee, int *indiceColonneArrivee)
+{
+    // Demander au joueur de saisir les coordonnées de la case de départ
+    char colonneDepart;
+    int ligneDepart;
+    printf("Entrez les coordonnees de la case de depart sans virgule (colonne, ligne) : ");
+    scanf(" %c%d", &colonneDepart, &ligneDepart);
+
+    // Convertir les coordonnées d'échecs en indices de ligne et de colonne
+    int indiceLigneDepartVal = *indiceLigneDepart, indiceColonneDepartVal = *indiceColonneDepart;
+    chess_to_indices(colonneDepart, ligneDepart, &indiceLigneDepartVal, &indiceColonneDepartVal);
+
+    // Vérifier si les coordonnées de départ sont valides
+    if (indiceLigneDepartVal == -1 || indiceColonneDepartVal == -1)
+    {
+        printf("Coordonnees de depart invalides.\n");
+        return false;
+    }
+
+    // Vérifier si la case de départ contient une pièce de la bonne couleur
+    int pieceDepart = chessboard[indiceLigneDepartVal][indiceColonneDepartVal];
+    if ((tourBlancs && pieceDepart < 0) || (!tourBlancs && pieceDepart > 0))
+    {
+        printf("La case de depart ne contient pas une piece de votre couleur.\n");
+        return false;
+    }
+    else if (pieceDepart == 0)
+    {
+        printf("Veuillez choisir une piece a deplacer.\n");
+        return false;
+    }
+
+    // Demander au joueur de saisir les coordonnées de la case d'arrivée
+    char colonneArrivee;
+    int ligneArrivee;
+    printf("Entrez les coordonnees de la case d'arrivee sans virgule (colonne, ligne) : ");
+    scanf(" %c%d", &colonneArrivee, &ligneArrivee);
+
+    // Convertir les coordonnées d'échecs en indices de ligne et de colonne
+    int indiceLigneArriveeVal = *indiceLigneArrivee, indiceColonneArriveeVal = *indiceColonneArrivee;
+    chess_to_indices(colonneArrivee, ligneArrivee, &indiceLigneArriveeVal, &indiceColonneArriveeVal);
+
+    // Vérifier si les coordonnées d'arrivée sont valides
+    if (indiceLigneArriveeVal == -1 || indiceColonneArriveeVal == -1)
+    {
+        printf("Coordonnees d'arrivee invalides.\n");
+        return false;
+    }
+
+    // Vérifier si la case d'arrivée contient une pièce de la même couleur
+    int pieceArrivee = chessboard[indiceLigneArriveeVal][indiceColonneArriveeVal];
+    if ((tourBlancs && pieceArrivee > 0) || (!tourBlancs && pieceArrivee < 0))
+    {
+        printf("La case d'arrivee contient une piece de votre couleur.\n");
+        return false;
+    }
+
+    // Dans ask_move, à la fin de la fonction
+    *indiceLigneDepart = indiceLigneDepartVal;
+    *indiceColonneDepart = indiceColonneDepartVal;
+    *indiceLigneArrivee = indiceLigneArriveeVal;
+    *indiceColonneArrivee = indiceColonneArriveeVal;
+
+    return true;
+}
+
 int main()
 {
     int chessboard[SIZE][SIZE];
@@ -551,9 +679,9 @@ int main()
 
     // Chargement d'une partie (à améliorer)
     printf("Voulez-vous charger une partie ? (o/n): ");
-    char choice;
-    scanf("%c", &choice);
-    if (choice == 'o' || choice == 'O')
+    char c1;
+    scanf("%c", &c1);
+    if (c1 == 'o' || c1 == 'O')
     {
         printf("Donnez le nom du fichier de sauvegarde: ");
         char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
@@ -569,26 +697,27 @@ int main()
         }
     }
 
+    // Choix de jouer contre un robot (à améliorer)
+    bool playWithRobot = false;
+    printf("Voulez vous jouer contre un robot ? (o/n): ");
+    char c2;
+    scanf(" %c", &c2);
+    if (c2 == 'o' || c2 == 'O')
+    {
+        playWithRobot = true;
+    }
+
     // Boucle principale du jeu
     while (!is_game_over(chessboard))
     {
         // Afficher l'état actuel de l'échiquier
         display_chessboard(chessboard);
 
-        if (tourBlancs)
-        {
-            printf("C'est au tour des blancs. (minuscule)\n");
-        }
-        else
-        {
-            printf("C'est au tour des noirs. (MAJUSCULE)\n");
-        }
-
         // Sauvegarde du jeu (à améliorer)
-        char choice;
         printf("Voulez vous sauvegarder et quitter la partie ? (o/n): ");
-        scanf(" %c", &choice);
-        if (choice == 'o' || choice == 'O')
+        char c3;
+        scanf(" %c", &c3);
+        if (c3 == 'o' || c3 == 'O')
         {
             printf("Donnez un nom au fichier de sauvegarde: ");
             char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
@@ -605,109 +734,41 @@ int main()
                 printf("Erreur lors de la saisie du nom de fichier.\n");
             }
         }
+        printf("\n");
 
-        // Demander au joueur de saisir les coordonnées de la case de départ
-        char colonneDepart;
-        int ligneDepart;
-        printf("Entrez les coordonnees de la case de depart sans virgule (colonne, ligne) : ");
-        scanf(" %c%d", &colonneDepart, &ligneDepart);
+        // Les coordonnées de départ et d'arrivée
+        int indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee;
 
-        // Convertir les coordonnées d'échecs en indices de ligne et de colonne
-        int indiceLigneDepart, indiceColonneDepart;
-        chess_to_indices(colonneDepart, ligneDepart, &indiceLigneDepart, &indiceColonneDepart);
-
-        // Vérifier si les coordonnées de départ sont valides
-        if (indiceLigneDepart == -1 || indiceColonneDepart == -1)
+        if (tourBlancs)
         {
-            printf("Coordonnees de depart invalides.\n");
-            continue;
+            printf("C'est au tour des blancs. (minuscule)\n");
+
+            // Demander au joueur de saisir les coordonnées
+            if (!ask_move(chessboard, tourBlancs, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
+            {
+                continue;
+            }
+        }
+        else
+        {
+            printf("C'est au tour des noirs. (MAJUSCULE)\n");
+            if (playWithRobot)
+            {
+                printf("Le robot joue...\n");
+            }
+            else
+            {
+                // Demander au joueur de saisir les coordonnées
+                if (!ask_move(chessboard, tourBlancs, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
+                {
+                    continue;
+                }
+            }
         }
 
-        // Vérifier si la case de départ contient une pièce de la bonne couleur
-        int pieceDepart = chessboard[indiceLigneDepart][indiceColonneDepart];
-        if ((tourBlancs && pieceDepart < 0) || (!tourBlancs && pieceDepart > 0))
+        // Vérifier si le déplacement est possible (en fonction du type de pièce jouée)
+        if (!is_move_valid_by_piece(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee))
         {
-            printf("La case de depart ne contient pas une piece de votre couleur.\n");
-            continue;
-        }
-        else if (pieceDepart == 0)
-        {
-            printf("Veuillez choisir une piece a deplacer.\n");
-            continue;
-        }
-
-        // Demander au joueur de saisir les coordonnées de la case d'arrivée
-        char colonneArrivee;
-        int ligneArrivee;
-        printf("Entrez les coordonnees de la case d'arrivee sans virgule (colonne, ligne) : ");
-        scanf(" %c%d", &colonneArrivee, &ligneArrivee);
-
-        // Convertir les coordonnées d'échecs en indices de ligne et de colonne
-        int indiceLigneArrivee, indiceColonneArrivee;
-        chess_to_indices(colonneArrivee, ligneArrivee, &indiceLigneArrivee, &indiceColonneArrivee);
-
-        // Vérifier si les coordonnées d'arrivée sont valides
-        if (indiceLigneArrivee == -1 || indiceColonneArrivee == -1)
-        {
-            printf("Coordonnees d'arrivee invalides.\n");
-            continue;
-        }
-
-        // Vérifier si la case d'arrivée contient une pièce de la même couleur
-        int pieceArrivee = chessboard[indiceLigneArrivee][indiceColonneArrivee];
-        if ((tourBlancs && pieceArrivee > 0) || (!tourBlancs && pieceArrivee < 0))
-        {
-            printf("La case d'arrivee contient une piece de votre couleur.\n");
-            continue;
-        }
-
-        // Vérifier si la pièce peut se déplacer vers la case d'arrivée
-        bool deplacementValide = false;
-        char *nomPiece = "";
-
-        // Vérifier le type de la pièce
-        switch (abs(pieceDepart))
-        {
-        case ROOK:
-            deplacementValide = is_rook_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "Tour";
-            break;
-        case KNIGHT:
-            deplacementValide = is_knight_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "Cheval";
-            break;
-        case BISHOP:
-            deplacementValide = is_bishop_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "Fou";
-            break;
-        case QUEEN:
-            deplacementValide = is_queen_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "Reine";
-            break;
-        case KING:
-            deplacementValide = is_king_move_valid(indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "Roi";
-            break;
-        case PAWN:
-            deplacementValide = is_pawn_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-            nomPiece = "Pion";
-            break;
-        default:
-            printf("Piece invalide.\n");
-            continue;
-        }
-
-        if (!deplacementValide)
-        {
-            printf("Le deplacement ne respecte pas les mouvements autorises de la piece %s\n", nomPiece);
-            continue;
-        }
-
-        deplacementValide = is_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
-
-        if (!deplacementValide)
-        {
-            printf("Vous ne pouvez pas deplacer cette piece vers cette case.\n");
             continue;
         }
 
