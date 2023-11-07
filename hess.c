@@ -4,6 +4,7 @@
 #include <stdbool.h> // Pour utiliser le type bool
 #include <conio.h>   // Pour Windows: getch()
 #include <string.h>  // Pour les chaines de caractères
+#include <time.h>    // Pour le random
 
 // Taille de l'échiquier (8x8)
 #define SIZE 8
@@ -228,6 +229,13 @@ void chess_to_indices(char colonne, int ligne, int *indiceLigne, int *indiceColo
     *indiceLigne = 8 - ligne;
 }
 
+void indices_to_chess(int indiceLigne, int indiceColonne, char *chessNotation)
+{
+    char colonneChar = 'A' + indiceColonne;
+    int ligne = 8 - indiceLigne;
+    sprintf(chessNotation, "%c%d", colonneChar, ligne);
+}
+
 // Fonction pour déplacer une pièce
 void move_piece(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
 {
@@ -261,7 +269,7 @@ bool is_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepar
 }
 
 // Fonction pour vérifier si la tour peut se déplacer
-bool is_rook_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+bool is_rook_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, bool playWithRobot)
 {
     // Vérifier si la tour se déplace horizontalement ou verticalement
     if (ligneDepart == ligneArrivee || colonneDepart == colonneArrivee)
@@ -280,7 +288,10 @@ bool is_rook_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
             int colonneIntermediaire = colonneDepart + i * pasColonne;
             if (chessboard[ligneIntermediaire][colonneIntermediaire] != 0)
             {
-                printf("Trajectoire de la tour bloquee.\n");
+                if (!playWithRobot)
+                {
+                    printf("Trajectoire de la tour bloquee.\n");
+                }
                 return false; // Déplacement invalide
             }
         }
@@ -290,13 +301,16 @@ bool is_rook_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
     }
     else
     {
-        printf("La tour ne peut se deplacer qu'horizontalement ou verticalement.\n");
+        if (!playWithRobot)
+        {
+            printf("La tour ne peut se deplacer qu'horizontalement ou verticalement.\n");
+        }
         return false; // Déplacement invalide
     }
 }
 
 // Fonction pour vérifier si le cheval peut se déplacer
-bool is_knight_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+bool is_knight_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, bool playWithRobot)
 {
     // Vérifier si le déplacement du cheval est valide
     int deltaLigne = abs(ligneArrivee - ligneDepart);
@@ -313,13 +327,16 @@ bool is_knight_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colon
         }
     }
 
-    printf("Le cheval ne peut se deplacer qu'en L.\n");
+    if (!playWithRobot)
+    {
+        printf("Le cheval ne peut se deplacer qu'en L.\n");
+    }
     // Si aucune des conditions ci-dessus n'est satisfaite, le déplacement est invalide
     return false;
 }
 
 // Fonction pour vérifier si le fou peut se déplacer
-bool is_bishop_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+bool is_bishop_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, bool playWithRobot)
 {
     // Vérifier si le déplacement du fou est diagonal
     int deltaLigne = abs(ligneArrivee - ligneDepart);
@@ -337,7 +354,10 @@ bool is_bishop_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colon
             int colonneIntermediaire = colonneDepart + i * pasColonne;
             if (chessboard[ligneIntermediaire][colonneIntermediaire] != 0)
             {
-                printf("Trajectoire du fou bloquee.\n");
+                if (!playWithRobot)
+                {
+                    printf("Trajectoire du fou bloquee.\n");
+                }
                 return false; // Déplacement invalide
             }
         }
@@ -347,13 +367,16 @@ bool is_bishop_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colon
     }
     else
     {
-        printf("Le fou ne peut se deplacer qu'en diagonale.\n");
+        if (!playWithRobot)
+        {
+            printf("Le fou ne peut se deplacer qu'en diagonale.\n");
+        }
         return false; // Déplacement invalide
     }
 }
 
 // Fonction pour vérifier si la reine peut se déplacer
-bool is_queen_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+bool is_queen_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, bool playWithRobot)
 {
     // Vérifier si la reine se déplace horizontalement, verticalement ou en diagonale
     int deltaLigne = abs(ligneArrivee - ligneDepart);
@@ -373,7 +396,10 @@ bool is_queen_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonn
             int colonneIntermediaire = colonneDepart + i * pasColonne;
             if (chessboard[ligneIntermediaire][colonneIntermediaire] != 0)
             {
-                printf("Trajectoire de la reine bloquee.\n");
+                if (!playWithRobot)
+                {
+                    printf("Trajectoire de la reine bloquee.\n");
+                }
                 return false; // Déplacement invalide
             }
         }
@@ -383,13 +409,16 @@ bool is_queen_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonn
     }
     else
     {
-        printf("La reine ne peut se deplacer qu'horizontalement, verticalement ou en diagonale.\n");
+        if (!playWithRobot)
+        {
+            printf("La reine ne peut se deplacer qu'horizontalement, verticalement ou en diagonale.\n");
+        }
         return false; // Déplacement invalide
     }
 }
 
 // Fonction pour vérifier si le roi peut se déplacer
-bool is_king_move_valid(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+bool is_king_move_valid(int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, bool playWithRobot)
 {
     // Vérifier si le roi se déplace horizontalement, verticalement ou en diagonale
     int deltaLigne = abs(ligneArrivee - ligneDepart);
@@ -402,13 +431,16 @@ bool is_king_move_valid(int ligneDepart, int colonneDepart, int ligneArrivee, in
     }
     else
     {
-        printf("Le roi ne peut se deplacer que d'une case horizontalement, verticalement ou en diagonale.\n");
+        if (!playWithRobot)
+        {
+            printf("Le roi ne peut se deplacer que d'une case horizontalement, verticalement ou en diagonale.\n");
+        }
         return false; // Déplacement invalide
     }
 }
 
 // Fonction pour vérifier si le déplacement d'un pion est valide
-bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee)
+bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonneDepart, int ligneArrivee, int colonneArrivee, bool playWithRobot)
 {
     // Récupérer la valeur de la pièce dans la case de départ
     int valeurPiece = chessboard[ligneDepart][colonneDepart];
@@ -463,6 +495,11 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
         }
     }
 
+    if (!playWithRobot)
+    {
+        printf("Le pion ne peut se deplacer que d'une case vers l'avant ou en diagonale avant pour manger.\n");
+    }
+
     return false; // Déplacement invalide par défaut
 }
 
@@ -510,7 +547,7 @@ bool is_game_over(int chessboard[SIZE][SIZE])
 }
 
 // Vérifie si le déplacement est bon en fonction du type de piece
-bool is_move_valid_by_piece(int chessboard[SIZE][SIZE], int indiceLigneDepart, int indiceColonneDepart, int indiceLigneArrivee, int indiceColonneArrivee)
+bool is_move_valid_by_piece(int chessboard[SIZE][SIZE], int indiceLigneDepart, int indiceColonneDepart, int indiceLigneArrivee, int indiceColonneArrivee, bool playWithRobot)
 {
     // Vérifier si la pièce peut se déplacer vers la case d'arrivée
     bool deplacementValide = false;
@@ -522,36 +559,42 @@ bool is_move_valid_by_piece(int chessboard[SIZE][SIZE], int indiceLigneDepart, i
     switch (abs(pieceDepart))
     {
     case ROOK:
-        deplacementValide = is_rook_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        deplacementValide = is_rook_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, playWithRobot);
         nomPiece = "Tour";
         break;
     case KNIGHT:
-        deplacementValide = is_knight_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        deplacementValide = is_knight_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, playWithRobot);
         nomPiece = "Cheval";
         break;
     case BISHOP:
-        deplacementValide = is_bishop_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        deplacementValide = is_bishop_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, playWithRobot);
         nomPiece = "Fou";
         break;
     case QUEEN:
-        deplacementValide = is_queen_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        deplacementValide = is_queen_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, playWithRobot);
         nomPiece = "Reine";
         break;
     case KING:
-        deplacementValide = is_king_move_valid(indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        deplacementValide = is_king_move_valid(indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, playWithRobot);
         nomPiece = "Roi";
         break;
     case PAWN:
-        deplacementValide = is_pawn_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee);
+        deplacementValide = is_pawn_move_valid(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, playWithRobot);
         nomPiece = "Pion";
         break;
     default:
-        printf("Piece invalide.\n");
+        if (!playWithRobot)
+        {
+            printf("Piece invalide.\n");
+        }
     }
 
     if (!deplacementValide)
     {
-        printf("Le deplacement ne respecte pas les mouvements autorises de la piece %s\n", nomPiece);
+        if (!playWithRobot)
+        {
+            printf("Le deplacement ne respecte pas les mouvements autorises de la piece %s\n", nomPiece);
+        }
         return false;
     }
     else
@@ -560,11 +603,25 @@ bool is_move_valid_by_piece(int chessboard[SIZE][SIZE], int indiceLigneDepart, i
 
         if (!deplacementValide)
         {
-            printf("Vous ne pouvez pas deplacer cette piece vers cette case.\n");
+            if (!playWithRobot)
+            {
+                printf("Vous ne pouvez pas deplacer cette piece vers cette case.\n");
+            }
+
             return false;
         }
         else
         {
+            if (playWithRobot)
+            {
+                // Convertir les indices en notation d'échecs
+                char chessNotationDepart[3];
+                indices_to_chess(indiceLigneDepart, indiceColonneDepart, chessNotationDepart);
+                char chessNotationArrivee[3];
+                indices_to_chess(indiceLigneArrivee, indiceColonneArrivee, chessNotationArrivee);
+
+                printf("Le robot a deplace sa piece %s de %s vers %s.\n", nomPiece, chessNotationDepart, chessNotationArrivee);
+            }
             return true;
         }
     }
@@ -635,6 +692,54 @@ bool ask_move(int chessboard[SIZE][SIZE], bool tourBlancs, int *indiceLigneDepar
     *indiceColonneArrivee = indiceColonneArriveeVal;
 
     return true;
+}
+
+// Fonction pour générer un coup aléatoire pour le robot
+bool generate_random_move(int chessboard[SIZE][SIZE], int *indiceLigneDepart, int *indiceColonneDepart, int *indiceLigneArrivee, int *indiceColonneArrivee)
+{
+    int ligne, colonne;
+    int piece;
+    bool piecetrouve = false;
+    bool aMoveFound = false;
+    int max_i = 100;
+
+    // Initialise le générateur de nombres aléatoires avec une graine basée sur l'horloge
+    srand(time(NULL));
+
+    // Trouver une pièce noire aléatoire
+    for (int i1 = 0; i1 < max_i && !piecetrouve; i1++)
+    {
+        ligne = rand() % SIZE;
+        colonne = rand() % SIZE;
+        piece = chessboard[ligne][colonne];
+        if (piece < 0)
+        {
+            piecetrouve = true;
+            // Mise à jour des indices de départ
+            *indiceLigneDepart = ligne;
+            *indiceColonneDepart = colonne;
+
+            // Générer aléatoirement des indices pour la case d'arrivée
+            for (int i2 = 0; i2 < max_i && !aMoveFound; i2++)
+            {
+                ligne = rand() % SIZE;
+                colonne = rand() % SIZE;
+                // Mise à jour des indices d'arrivée
+                *indiceLigneArrivee = ligne;
+                *indiceColonneArrivee = colonne;
+                if (is_move_valid_by_piece(chessboard, *indiceLigneDepart, *indiceColonneDepart, *indiceLigneArrivee, *indiceColonneArrivee, true))
+                {
+                    aMoveFound = true;
+                    return true;
+                }
+            }
+            piecetrouve = false;
+        }
+    }
+
+    printf("Le robot n'a pas trouve de coup valide a jouer.\n");
+
+    return false;
 }
 
 int main()
@@ -713,63 +818,60 @@ int main()
         // Afficher l'état actuel de l'échiquier
         display_chessboard(chessboard);
 
-        // Sauvegarde du jeu (à améliorer)
-        printf("Voulez vous sauvegarder et quitter la partie ? (o/n): ");
-        char c3;
-        scanf(" %c", &c3);
-        if (c3 == 'o' || c3 == 'O')
-        {
-            printf("Donnez un nom au fichier de sauvegarde: ");
-            char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
-
-            if (scanf("%99s", filename) == 1)
-            { // Utilisez %99s pour éviter un dépassement de mémoire
-                printf("Nom du fichier: %s.hess\n", filename);
-                save_game(chessboard, filename);
-                break;
-                exit(0);
-            }
-            else
-            {
-                printf("Erreur lors de la saisie du nom de fichier.\n");
-            }
-        }
-        printf("\n");
-
         // Les coordonnées de départ et d'arrivée
         int indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee;
-
         if (tourBlancs)
         {
             printf("C'est au tour des blancs. (minuscule)\n");
+        }
+        else
+        {
+            printf("C'est au tour des noirs. (MAJUSCULE)\n");
+        }
 
-            // Demander au joueur de saisir les coordonnées
-            if (!ask_move(chessboard, tourBlancs, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
+        if (!tourBlancs && playWithRobot)
+        {
+            printf("Le robot joue...\n");
+            if (!generate_random_move(chessboard, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
             {
                 continue;
             }
         }
         else
         {
-            printf("C'est au tour des noirs. (MAJUSCULE)\n");
-            if (playWithRobot)
+            // Sauvegarde du jeu (à améliorer)
+            printf("Voulez vous sauvegarder et quitter la partie ? (o/n): ");
+            char c3;
+            scanf(" %c", &c3);
+            if (c3 == 'o' || c3 == 'O')
             {
-                printf("Le robot joue...\n");
-            }
-            else
-            {
-                // Demander au joueur de saisir les coordonnées
-                if (!ask_move(chessboard, tourBlancs, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
+                printf("Donnez un nom au fichier de sauvegarde: ");
+                char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
+
+                if (scanf("%99s", filename) == 1)
+                { // Utilisez %99s pour éviter un dépassement de mémoire
+                    printf("Nom du fichier: %s.hess\n", filename);
+                    save_game(chessboard, filename);
+                    break;
+                    exit(0);
+                }
+                else
                 {
-                    continue;
+                    printf("Erreur lors de la saisie du nom de fichier.\n");
                 }
             }
-        }
+            printf("\n");
 
-        // Vérifier si le déplacement est possible (en fonction du type de pièce jouée)
-        if (!is_move_valid_by_piece(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee))
-        {
-            continue;
+            // Demander au joueur de saisir les coordonnées
+            if (!ask_move(chessboard, tourBlancs, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
+            {
+                continue;
+            }
+            // Vérifier si le déplacement est possible (en fonction du type de pièce jouée)
+            if (!is_move_valid_by_piece(chessboard, indiceLigneDepart, indiceColonneDepart, indiceLigneArrivee, indiceColonneArrivee, false))
+            {
+                continue;
+            }
         }
 
         // Déplacer la pièce
