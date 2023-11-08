@@ -506,36 +506,74 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
 // Fonction pour vérifier si la partie d'échecs est terminée
 bool is_game_over(int chessboard[SIZE][SIZE])
 {
-    bool whiteFound = false, blackFound = false;
-    // Parcourez le tableau pour rechercher des pions blancs et noirs
-    for (int i = 0; i < SIZE; i++)
+    // Recherchez des conditions de fin de partie ici
+    // Par exemple, vérifiez si le roi d'une des deux couleurs a été mis en échec et mat,
+    // ou si la partie est terminée par un pat (stalemate), un échec perpétuel, etc.
+
+    // Exemple simplifié : La partie est terminée si l'un des rois est absent
+    bool roiBlancTrouve = false;
+    bool roiNoirTrouve = false;
+
+    for (int ligne = 0; ligne < SIZE; ligne++)
     {
-        for (int j = 0; j < SIZE; j++)
+        for (int colonne = 0; colonne < SIZE; colonne++)
         {
-            int piece = chessboard[i][j];
-            if (piece > 0)
+            int piece = chessboard[ligne][colonne];
+            if (piece == WHITE_KING)
             {
-                whiteFound = true; // Pion blanc trouvé
+                roiBlancTrouve = true;
             }
-            else if (piece < 0)
+            else if (piece == BLACK_KING)
             {
-                blackFound = true; // Pion noir trouvé
+                roiNoirTrouve = true;
             }
         }
     }
 
-    if (blackFound && !whiteFound)
+    if (roiNoirTrouve && !roiBlancTrouve)
     {
         display_chessboard(chessboard);
         printf("La partie est terminee. Les noirs ont gagne !\n");
         return true;
     }
-    else if (whiteFound && !blackFound)
+    else if (roiBlancTrouve && !roiNoirTrouve)
     {
         display_chessboard(chessboard);
         printf("La partie est terminee. Les blancs ont gagne !\n");
         return true;
     }
+
+    // Exemple simplifié : La partie est terminée si l'adversaire n'a plus de pions
+    // bool whiteFound = false, blackFound = false;
+    // // Parcourez le tableau pour rechercher des pions blancs et noirs
+    // for (int i = 0; i < SIZE; i++)
+    // {
+    //     for (int j = 0; j < SIZE; j++)
+    //     {
+    //         int piece = chessboard[i][j];
+    //         if (piece > 0)
+    //         {
+    //             whiteFound = true; // Pion blanc trouvé
+    //         }
+    //         else if (piece < 0)
+    //         {
+    //             blackFound = true; // Pion noir trouvé
+    //         }
+    //     }
+    // }
+
+    // if (blackFound && !whiteFound)
+    // {
+    //     display_chessboard(chessboard);
+    //     printf("La partie est terminee. Les noirs ont gagne !\n");
+    //     return true;
+    // }
+    // else if (whiteFound && !blackFound)
+    // {
+    //     display_chessboard(chessboard);
+    //     printf("La partie est terminee. Les blancs ont gagne !\n");
+    //     return true;
+    // }
 
     // Si aucune des conditions de fin de partie n'est vérifiée, la partie n'est pas terminée
     return false;
@@ -628,7 +666,7 @@ bool ask_move(int chessboard[SIZE][SIZE], bool tourBlancs, int *indiceLigneDepar
     // Demander au joueur de saisir les coordonnées de la case de départ
     char colonneDepart;
     int ligneDepart;
-    printf("Entrez les coordonnees de la case de depart sans virgule (colonne, ligne) : ");
+    printf("Entrez les coordonnees de la case de depart sans virgule (ex: E4) : ");
     scanf(" %c%d", &colonneDepart, &ligneDepart);
 
     // Convertir les coordonnées d'échecs en indices de ligne et de colonne
@@ -658,7 +696,7 @@ bool ask_move(int chessboard[SIZE][SIZE], bool tourBlancs, int *indiceLigneDepar
     // Demander au joueur de saisir les coordonnées de la case d'arrivée
     char colonneArrivee;
     int ligneArrivee;
-    printf("Entrez les coordonnees de la case d'arrivee sans virgule (colonne, ligne) : ");
+    printf("Entrez les coordonnees de la case d'arrivee sans virgule (ex: E4) : ");
     scanf(" %c%d", &colonneArrivee, &ligneArrivee);
 
     // Convertir les coordonnées d'échecs en indices de ligne et de colonne
@@ -784,16 +822,32 @@ int main()
     init_chessboard(chessboard);
 
     // Placez les pièces noires sur le jeu
-    chessboard[0][2] = BLACK_ROOK;
+    chessboard[0][0] = BLACK_ROOK;
+    chessboard[0][7] = BLACK_ROOK;
+    chessboard[0][1] = BLACK_KNIGHT;
+    chessboard[0][6] = BLACK_KNIGHT;
+    chessboard[0][2] = BLACK_BISHOP;
+    chessboard[0][5] = BLACK_BISHOP;
     chessboard[0][3] = BLACK_QUEEN;
-    chessboard[0][4] = BLACK_BISHOP;
-    chessboard[0][5] = BLACK_KNIGHT;
+    chessboard[0][4] = BLACK_KING;
+    for (int i = 0; i < SIZE; i++)
+    {
+        chessboard[1][i] = BLACK_PAWN;
+    }
 
     // Placez les pièces blanches sur le jeu
-    chessboard[7][2] = WHITE_ROOK;
-    chessboard[7][3] = WHITE_BISHOP;
-    chessboard[7][4] = WHITE_QUEEN;
-    chessboard[7][5] = WHITE_KNIGHT;
+    chessboard[7][0] = WHITE_ROOK;
+    chessboard[7][7] = WHITE_ROOK;
+    chessboard[7][1] = WHITE_KNIGHT;
+    chessboard[7][6] = WHITE_KNIGHT;
+    chessboard[7][2] = WHITE_BISHOP;
+    chessboard[7][5] = WHITE_BISHOP;
+    chessboard[7][3] = WHITE_QUEEN;
+    chessboard[7][4] = WHITE_KING;
+    for (int i = 0; i < SIZE; i++)
+    {
+        chessboard[6][i] = WHITE_PAWN;
+    }
 
     bool tourBlancs = true; // Pour déterminer de quel côté commence la partie
 
