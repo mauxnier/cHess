@@ -506,38 +506,33 @@ bool is_pawn_move_valid(int chessboard[SIZE][SIZE], int ligneDepart, int colonne
 // Fonction pour vérifier si la partie d'échecs est terminée
 bool is_game_over(int chessboard[SIZE][SIZE])
 {
-    // Recherchez des conditions de fin de partie ici
-    // Par exemple, vérifiez si le roi d'une des deux couleurs a été mis en échec et mat,
-    // ou si la partie est terminée par un pat (stalemate), un échec perpétuel, etc.
-    // Implémentez ces vérifications en fonction des règles de votre jeu d'échecs.
-
-    // Exemple simplifié : La partie est terminée si l'un des rois est absent
-    bool roiBlancTrouve = false;
-    bool roiNoirTrouve = false;
-
-    for (int ligne = 0; ligne < SIZE; ligne++)
+    bool whiteFound = false, blackFound = false;
+    // Parcourez le tableau pour rechercher des pions blancs et noirs
+    for (int i = 0; i < SIZE; i++)
     {
-        for (int colonne = 0; colonne < SIZE; colonne++)
+        for (int j = 0; j < SIZE; j++)
         {
-            int piece = chessboard[ligne][colonne];
-            if (piece == WHITE_KING)
+            int piece = chessboard[i][j];
+            if (piece > 0)
             {
-                roiBlancTrouve = true;
+                whiteFound = true; // Pion blanc trouvé
             }
-            else if (piece == BLACK_KING)
+            else if (piece < 0)
             {
-                roiNoirTrouve = true;
+                blackFound = true; // Pion noir trouvé
             }
         }
     }
 
-    if (!roiBlancTrouve)
+    if (blackFound && !whiteFound)
     {
+        display_chessboard(chessboard);
         printf("La partie est terminee. Les noirs ont gagne !\n");
         return true;
     }
-    else if (!roiNoirTrouve)
+    else if (whiteFound && !blackFound)
     {
+        display_chessboard(chessboard);
         printf("La partie est terminee. Les blancs ont gagne !\n");
         return true;
     }
@@ -701,7 +696,7 @@ bool generate_random_move(int chessboard[SIZE][SIZE], int *indiceLigneDepart, in
     int piece;
     bool piecetrouve = false;
     bool aMoveFound = false;
-    int max_i = 100;
+    int max_i = 1000;
 
     // Initialise le générateur de nombres aléatoires avec une graine basée sur l'horloge
     srand(time(NULL));
@@ -742,6 +737,45 @@ bool generate_random_move(int chessboard[SIZE][SIZE], int *indiceLigneDepart, in
     return false;
 }
 
+// Fonction pour proposer à l'utilisateur d'enregistrer la partie en appuyant sur Échap ou de continuer en appuyant sur n'importe quelle autre touche
+bool save_game_prompt(int chessboard[SIZE][SIZE])
+{
+    printf("Appuyez sur Echap pour enregistrer la partie (ou n'importe quelle autre touche pour continuer)...\n");
+
+    char key = getch();
+    if (key == 27)
+    {
+        // Sauvegarde du jeu (à améliorer)
+        printf("Voulez vous sauvegarder et quitter la partie ? (o/n): ");
+        char c3;
+        scanf(" %c", &c3);
+        if (c3 == 'o' || c3 == 'O')
+        {
+            printf("Donnez un nom au fichier de sauvegarde: ");
+            char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
+
+            if (scanf("%99s", filename) == 1)
+            { // Utilisez %99s pour éviter un dépassement de mémoire
+                printf("Nom du fichier: %s.hess\n", filename);
+                save_game(chessboard, filename);
+                return true; // La partie est enregistrée
+            }
+            else
+            {
+                printf("Erreur lors de la saisie du nom de fichier.\n");
+            }
+        }
+        else
+        {
+            printf("Partie non enregistree. Le jeu continue !\n");
+            return false;
+        }
+    }
+
+    // Si l'utilisateur appuie sur n'importe quelle autre touche, la partie continue
+    return false;
+}
+
 int main()
 {
     int chessboard[SIZE][SIZE];
@@ -750,32 +784,16 @@ int main()
     init_chessboard(chessboard);
 
     // Placez les pièces noires sur le jeu
-    chessboard[0][0] = BLACK_ROOK;
-    chessboard[0][7] = BLACK_ROOK;
-    chessboard[0][1] = BLACK_KNIGHT;
-    chessboard[0][6] = BLACK_KNIGHT;
-    chessboard[0][2] = BLACK_BISHOP;
-    chessboard[0][5] = BLACK_BISHOP;
+    chessboard[0][2] = BLACK_ROOK;
     chessboard[0][3] = BLACK_QUEEN;
-    chessboard[0][4] = BLACK_KING;
-    for (int i = 0; i < SIZE; i++)
-    {
-        chessboard[1][i] = BLACK_PAWN;
-    }
+    chessboard[0][4] = BLACK_BISHOP;
+    chessboard[0][5] = BLACK_KNIGHT;
 
     // Placez les pièces blanches sur le jeu
-    chessboard[7][0] = WHITE_ROOK;
-    chessboard[7][7] = WHITE_ROOK;
-    chessboard[7][1] = WHITE_KNIGHT;
-    chessboard[7][6] = WHITE_KNIGHT;
-    chessboard[7][2] = WHITE_BISHOP;
-    chessboard[7][5] = WHITE_BISHOP;
-    chessboard[7][3] = WHITE_QUEEN;
-    chessboard[7][4] = WHITE_KING;
-    for (int i = 0; i < SIZE; i++)
-    {
-        chessboard[6][i] = WHITE_PAWN;
-    }
+    chessboard[7][2] = WHITE_ROOK;
+    chessboard[7][3] = WHITE_BISHOP;
+    chessboard[7][4] = WHITE_QUEEN;
+    chessboard[7][5] = WHITE_KNIGHT;
 
     bool tourBlancs = true; // Pour déterminer de quel côté commence la partie
 
@@ -812,8 +830,9 @@ int main()
         playWithRobot = true;
     }
 
+    bool continueGame = true;
     // Boucle principale du jeu
-    while (!is_game_over(chessboard))
+    while (!is_game_over(chessboard) && continueGame)
     {
         // Afficher l'état actuel de l'échiquier
         display_chessboard(chessboard);
@@ -839,28 +858,12 @@ int main()
         }
         else
         {
-            // Sauvegarde du jeu (à améliorer)
-            printf("Voulez vous sauvegarder et quitter la partie ? (o/n): ");
-            char c3;
-            scanf(" %c", &c3);
-            if (c3 == 'o' || c3 == 'O')
+            // Proposez à l'utilisateur d'enregistrer la partie ou de continuer
+            continueGame = !save_game_prompt(chessboard);
+            if (!continueGame)
             {
-                printf("Donnez un nom au fichier de sauvegarde: ");
-                char filename[100]; // Allouez suffisamment d'espace pour le nom du fichier
-
-                if (scanf("%99s", filename) == 1)
-                { // Utilisez %99s pour éviter un dépassement de mémoire
-                    printf("Nom du fichier: %s.hess\n", filename);
-                    save_game(chessboard, filename);
-                    break;
-                    exit(0);
-                }
-                else
-                {
-                    printf("Erreur lors de la saisie du nom de fichier.\n");
-                }
+                break;
             }
-            printf("\n");
 
             // Demander au joueur de saisir les coordonnées
             if (!ask_move(chessboard, tourBlancs, &indiceLigneDepart, &indiceColonneDepart, &indiceLigneArrivee, &indiceColonneArrivee))
@@ -879,8 +882,6 @@ int main()
 
         // Passer au tour suivant
         tourBlancs = !tourBlancs;
-
-        printf("\n");
     }
 
     return 0;
